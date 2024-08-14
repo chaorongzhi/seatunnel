@@ -53,5 +53,5 @@ seatunnel-examples
 # vscode
 .vscode
 
-/lib/*
+/seatunnel-examples/seatunnel-engine-examples/lib/*
 version.properties

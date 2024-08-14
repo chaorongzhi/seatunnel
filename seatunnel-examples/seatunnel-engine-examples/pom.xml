@@ -86,9 +86,9 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.venustech.taihe.pangu.thbd</groupId>
-            <artifactId>thbd-ceres-connector-chronicle</artifactId>
-            <version>1.2.5</version>
+            <groupId>org.apache.seatunnel</groupId>
+            <artifactId>connector-chronicle</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.seatunnel</groupId>
@@ -166,7 +166,7 @@
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>9.2.1.jre8</version>
+            <version>9.4.1.jre8</version>
         </dependency>
         <dependency>
             <groupId>com.ibm.db2.jcc</groupId>
@@ -178,12 +178,31 @@
             <artifactId>terajdbc4</artifactId>
             <version>17.20.00.12</version>
         </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>com.teradata</groupId>-->
+        <!--            <artifactId>jdbc.terajdbc4</artifactId>-->
+        <!--            <version>13.00.00.06</version>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>com.teradata.tdgss</groupId>-->
+        <!--            <artifactId>tdgssconfig</artifactId>-->
+        <!--            <version>13l.00.00.00</version>-->
+        <!--        </dependency>-->
         <!-- Sybase ASE 15.7 驱动 -->
+        <!--        <dependency>-->
+        <!--            <groupId>net.sourceforge.jtds</groupId>-->
+        <!--            <artifactId>jtds</artifactId>-->
+        <!--            <version>1.3.1</version>-->
+        <!--            &lt;!&ndash; 请确认最新稳定版本 &ndash;&gt;-->
+        <!--        </dependency>-->
+
         <dependency>
-            <groupId>net.sourceforge.jtds</groupId>
-            <artifactId>jtds</artifactId>
-            <version>1.3.1</version>
-            <!-- 请确认最新稳定版本 -->
+            <groupId>com.sybase</groupId>
+            <artifactId>jconn4</artifactId>
+            <version>7.0</version>
+            <!-- 请检查最新版本 -->
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/jconn4.jar</systemPath>
         </dependency>
 
         <!-- Informix 14.10 驱动 -->
@@ -196,24 +215,4 @@
 
     </dependencies>
 
-    <repositories>
-        <repository>
-            <id>libs-release</id>
-            <url>http://192.168.12.88:8082/artifactory/libs-release/</url>
-        </repository>
-        <repository>
-            <id>libs-snapshot</id>
-            <url>http://192.168.12.88:8082/artifactory/libs-snapshot/</url>
-        </repository>
-        <repository>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <id>huaweicloudsdk</id>
-            <url>https://mirrors.huaweicloud.com/repository/maven/huaweicloudsdk/</url>
-        </repository>
-    </repositories>
 </project>
