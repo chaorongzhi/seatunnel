@@ -53,6 +53,8 @@
         <clickhouse.jdbc.version>0.2.6</clickhouse.jdbc.version>
         <xugu.jdbc.version>12.2.0</xugu.jdbc.version>
         <iris.jdbc.version>3.0.0</iris.jdbc.version>
+        <tikv.version>3.2.0</tikv.version>
+        <opengauss.jdbc.version>5.1.0-og</opengauss.jdbc.version>
     </properties>
 
     <dependencyManagement>
@@ -183,10 +185,6 @@
                         <groupId>jdk.tools</groupId>
                         <artifactId>jdk.tools</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.zookeeper</groupId>
-                        <artifactId>zookeeper</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -207,32 +205,17 @@
                 <version>${iris.jdbc.version}</version>
                 <scope>provided</scope>
             </dependency>
+
             <dependency>
-                <groupId>ru.yandex.clickhouse</groupId>
-                <artifactId>clickhouse-jdbc</artifactId>
-                <version>${clickhouse.jdbc.version}</version>
+                <groupId>org.tikv</groupId>
+                <artifactId>tikv-client-java</artifactId>
+                <version>${tikv.version}</version>
                 <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-auth</artifactId>
-                <version>3.1.1-mrs-2.1</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-auth</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.apache.seatunnel</groupId>
             <artifactId>connector-common</artifactId>
@@ -335,6 +318,11 @@
             <groupId>com.intersystems</groupId>
             <artifactId>intersystems-jdbc</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.tikv</groupId>
+            <artifactId>tikv-client-java</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -376,17 +364,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <repositories>
-        <repository>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <id>huaweicloudsdk</id>
-            <url>https://mirrors.huaweicloud.com/repository/maven/huaweicloudsdk/</url>
-        </repository>
-    </repositories>
 </project>
