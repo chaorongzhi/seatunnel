@@ -41,6 +41,7 @@ public class HttpParameter implements Serializable {
     protected int connectTimeoutMs = HttpConfig.DEFAULT_CONNECT_TIMEOUT_MS;
     protected int socketTimeoutMs = HttpConfig.DEFAULT_SOCKET_TIMEOUT_MS;
     protected boolean enableSsl;
+    protected boolean pageOnParam;
 
     public void buildWithConfig(Config pluginConfig) {
         // set url
@@ -96,6 +97,9 @@ public class HttpParameter implements Serializable {
         }
         if (pluginConfig.hasPath(HttpConfig.ENABLE_SSL_CERT.key())) {
             this.setEnableSsl(pluginConfig.getBoolean(HttpConfig.ENABLE_SSL_CERT.key()));
+        }
+        if (pluginConfig.hasPath(HttpConfig.PAGE_ON_PARAM.key())) {
+            this.setPageOnParam(pluginConfig.getBoolean(HttpConfig.PAGE_ON_PARAM.key()));
         }
     }
 

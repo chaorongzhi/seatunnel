@@ -144,6 +144,26 @@ public class HttpSourceReader extends AbstractSingleSplitReader<SeaTunnelRow> {
         }
     }
 
+    private void updateRequestPage(PageInfo pageInfo) {
+        String page = pageInfo.getPageIndex().toString();
+        String pageField = pageInfo.getPageField();
+        if (this.httpParameter.isPageOnParam()) {
+            this.httpParameter.getParams().put(pageInfo.getPageField(), page);
+        } else {
+            String bodyString = httpParameter.getBody();
+            if (pageField == null
+                    || Strings.isNullOrEmpty(page)
+                    || Strings.isNullOrEmpty(bodyString)) {
+                return;
+            }
+
+            String unquotedPlaceholder = "${" + pageField + "}";
+            if (bodyString.contains(unquotedPlaceholder)) {
+                this.httpParameter.setBody(bodyString.replace(unquotedPlaceholder, page));
+            }
+        }
+    }
+
     private void updateRequestParam(PageInfo pageInfo) {
         if (this.httpParameter.getParams() == null) {
             httpParameter.setParams(new HashMap<>());
@@ -164,7 +184,7 @@ public class HttpSourceReader extends AbstractSingleSplitReader<SeaTunnelRow> {
                     // increment page
                     info.setPageIndex(pageIndex);
                     // set request param
-                    updateRequestParam(info);
+                    updateRequestPage(info);
                     pollAndCollectData(output);
                     pageIndex += 1;
                     Thread.sleep(10);

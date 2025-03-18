@@ -132,6 +132,12 @@ public class HttpConfig {
                     .defaultValue(false)
                     .withDescription("Enable ssl certificate.");
 
+    public static final Option<Boolean> PAGE_ON_PARAM =
+            Options.key("page_on_param")
+                    .booleanType()
+                    .defaultValue(false)
+                    .withDescription("Is page on param.");
+
     public enum ResponseFormat {
         JSON("json"),
         TEXT("text");
