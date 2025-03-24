@@ -22,6 +22,7 @@ seatunnel:
     queue-type: blockingqueue
     print-execution-info-interval: 60
     print-job-metrics-info-interval: 60
+    classloader-cache-mode: true
     slot-service:
       dynamic-slot: true
     checkpoint:
