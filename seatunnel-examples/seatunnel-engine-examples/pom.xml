@@ -80,6 +80,11 @@
             <artifactId>connector-clickhouse</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.venustech.taihe.pangu.thbd</groupId>
+            <artifactId>thbd-ceres-connector-chronicle</artifactId>
+            <version>1.2.5</version>
+        </dependency>
 
         <dependency>
             <groupId>mysql</groupId>
@@ -102,4 +107,25 @@
             <version>0.2.6</version>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>libs-release</id>
+            <url>http://192.168.12.88:8082/artifactory/libs-release/</url>
+        </repository>
+        <repository>
+            <id>libs-snapshot</id>
+            <url>http://192.168.12.88:8082/artifactory/libs-snapshot/</url>
+        </repository>
+        <repository>
+            <id>huaweicloudsdk</id>
+            <url>https://mirrors.huaweicloud.com/repository/maven/huaweicloudsdk/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>
