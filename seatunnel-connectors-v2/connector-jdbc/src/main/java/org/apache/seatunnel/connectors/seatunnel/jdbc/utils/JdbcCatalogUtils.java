@@ -393,6 +393,7 @@ public class JdbcCatalogUtils {
                 .ifPresent(val -> catalogConfig.put(JdbcCatalogOptions.USERNAME.key(), val));
         config.getPassword()
                 .ifPresent(val -> catalogConfig.put(JdbcCatalogOptions.PASSWORD.key(), val));
+        catalogConfig.put(JdbcCatalogOptions.DRIVER.key(), config.getDriverName());
         return ReadonlyConfig.fromMap(catalogConfig);
     }
 }

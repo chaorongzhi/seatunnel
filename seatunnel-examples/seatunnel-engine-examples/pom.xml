@@ -118,14 +118,14 @@
             <url>http://192.168.12.88:8082/artifactory/libs-snapshot/</url>
         </repository>
         <repository>
-            <id>huaweicloudsdk</id>
-            <url>https://mirrors.huaweicloud.com/repository/maven/huaweicloudsdk/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
+            <id>huaweicloudsdk</id>
+            <url>https://mirrors.huaweicloud.com/repository/maven/huaweicloudsdk/</url>
         </repository>
     </repositories>
 </project>

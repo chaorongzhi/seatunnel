@@ -17,8 +17,8 @@ Used to read data from Redis.
 
 ## Options
 
-| name                | type   | required              | default value |
-| ------------------- | ------ | --------------------- | ------------- |
+|        name         |  type  |       required        | default value |
+|---------------------|--------|-----------------------|---------------|
 | host                | string | yes                   | -             |
 | port                | int    | yes                   | -             |
 | keys                | string | yes                   | -             |
@@ -82,8 +82,8 @@ schema {
 
 ```
 
-| 001                             | 002                       |
-| ------------------------------- | ------------------------- |
+|               001               |            002            |
+|---------------------------------|---------------------------|
 | Row(name=tyrantlucifer, age=26) | Row(name=Zongwen, age=26) |
 
 if hash_key_parse_mode is `kv` and schema config as the following shown, it will generate the following data:
@@ -99,10 +99,10 @@ schema {
 
 ```
 
-| hash_key | name          | age  |
-| -------- | ------------- | ---- |
-| 001      | tyrantlucifer | 26   |
-| 002      | Zongwen       | 26   |
+| hash_key |     name      | age |
+|----------|---------------|-----|
+| 001      | tyrantlucifer | 26  |
+| 002      | Zongwen       | 26  |
 
 each kv that in hash key it will be treated as a row and send it to upstream.
 
@@ -197,8 +197,8 @@ schema {
 
 connector will generate data as the following:
 
-| code | data        | success |
-| ---- | ----------- | ------- |
+| code |    data     | success |
+|------|-------------|---------|
 | 200  | get success | true    |
 
 when you assign format is `text`, connector will do nothing for upstream data, for example:
@@ -212,8 +212,8 @@ upstream data is the following:
 
 connector will generate data as the following:
 
-| content                                                  |
-| -------------------------------------------------------- |
+|                         content                          |
+|----------------------------------------------------------|
 | {"code":  200, "data":  "get success", "success":  true} |
 
 ### schema [config]
@@ -291,4 +291,5 @@ sink {
 ### next version
 
 - [Improve] Support redis cluster mode connection and user authentication [3188](https://github.com/apache/seatunnel/pull/3188)
--  [Bug] Redis scan command supports versions 5, 6, 7 [7666](https://github.com/apache/seatunnel/pull/7666)
+- [Bug] Redis scan command supports versions 5, 6, 7 [7666](https://github.com/apache/seatunnel/pull/7666)
+

@@ -74,4 +74,6 @@ public interface JdbcCatalogOptions {
                     .noDefaultValue()
                     .withDescription(
                             "The table suffix name added when the table is automatically created");
+
+    Option<String> DRIVER = Options.key("driver").stringType().noDefaultValue();
 }

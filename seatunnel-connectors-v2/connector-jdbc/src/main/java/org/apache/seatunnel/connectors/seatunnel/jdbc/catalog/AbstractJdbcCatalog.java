@@ -46,12 +46,14 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -81,12 +83,15 @@ public abstract class AbstractJdbcCatalog implements Catalog {
 
     protected final Map<String, Connection> connectionMap;
 
+    private final String driverClass;
+
     public AbstractJdbcCatalog(
             String catalogName,
             String username,
             String pwd,
             JdbcUrlUtil.UrlInfo urlInfo,
-            String defaultSchema) {
+            String defaultSchema,
+            String driverClass) {
 
         checkArgument(StringUtils.isNotBlank(username));
         checkArgument(StringUtils.isNotBlank(urlInfo.getUrlWithoutDatabase()));
@@ -99,6 +104,7 @@ public abstract class AbstractJdbcCatalog implements Catalog {
         this.suffix = urlInfo.getSuffix();
         this.defaultSchema = Optional.ofNullable(defaultSchema);
         this.connectionMap = new ConcurrentHashMap<>();
+        this.driverClass = driverClass;
     }
 
     @Override
@@ -115,6 +121,46 @@ public abstract class AbstractJdbcCatalog implements Catalog {
         if (connectionMap.containsKey(url)) {
             return connectionMap.get(url);
         }
+
+        if (!StringUtils.isEmpty(driverClass)) {
+            LOG.info("try to find driver {}", driverClass);
+            java.util.Properties info = new java.util.Properties();
+            if (username != null) {
+                info.put("user", username);
+            }
+            if (pwd != null) {
+                info.put("password", pwd);
+            }
+
+            try {
+                Enumeration<Driver> drivers = DriverManager.getDrivers();
+                while (drivers.hasMoreElements()) {
+                    Driver driver = drivers.nextElement();
+                    if (driver.getClass().getName().equals(driverClass)) {
+                        Connection connection = driver.connect(url, info);
+                        connectionMap.put(url, connection);
+                        return connection;
+                    }
+                }
+            } catch (Exception ex) {
+                LOG.warn("find driver error, back to DriverManager.getConnection", ex);
+            }
+
+            // We could reach here for reasons:
+            // * Class loader hell of DriverManager(see JDK-8146872).
+            // * driver is not installed as a service provider.
+            try {
+                Class<?> clazz =
+                        Class.forName(
+                                driverClass, true, Thread.currentThread().getContextClassLoader());
+                Driver driver = (Driver) clazz.getDeclaredConstructor().newInstance();
+                Connection connection = driver.connect(url, info);
+                connectionMap.put(url, connection);
+            } catch (Exception ex) {
+                LOG.warn("find driver error, back to DriverManager.getConnection", ex);
+            }
+        }
+
         try {
             Connection connection = DriverManager.getConnection(url, username, pwd);
             connectionMap.put(url, connection);
