@@ -17,9 +17,6 @@
 
 package org.apache.seatunnel.transform.iisparse;
 
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.seatunnel.api.configuration.ReadonlyConfig;
 import org.apache.seatunnel.api.table.catalog.CatalogTable;
 import org.apache.seatunnel.api.table.catalog.TableIdentifier;
@@ -27,7 +24,9 @@ import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.transform.common.FilterRowTransform;
 import org.apache.seatunnel.transform.exception.TransformCommonError;
-import org.apache.seatunnel.transform.multiplemerge.MulLineMergeTransformConfig;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.List;
@@ -41,8 +40,7 @@ public class IISParseTransform extends FilterRowTransform {
 
     private String mergeContent = "";
 
-    public IISParseTransform(
-            @NonNull ReadonlyConfig config, @NonNull CatalogTable catalogTable) {
+    public IISParseTransform(@NonNull ReadonlyConfig config, @NonNull CatalogTable catalogTable) {
         super(catalogTable);
         SeaTunnelRowType seaTunnelRowType = catalogTable.getTableSchema().toPhysicalRowDataType();
         requiredFormat = config.get(IISParseTransformConfig.REQUIRED_FORMAT);
@@ -68,8 +66,8 @@ public class IISParseTransform extends FilterRowTransform {
             return null;
         }
         if (value.startsWith("#Fields")) {
-            value = value.substring(8);// 去掉串“#Fields：”，得到格式串
-            value = value.trim();// 去掉串首尾的空白字符
+            value = value.substring(8); // 去掉串“#Fields：”，得到格式串
+            value = value.trim(); // 去掉串首尾的空白字符
             logFormat = value.split("\\s");
             return null;
         }
@@ -81,13 +79,12 @@ public class IISParseTransform extends FilterRowTransform {
         return outputRow;
     }
 
-    private String formatLogs(String line, String[] logFormat,
-                              String[] requiredFormat) {
+    private String formatLogs(String line, String[] logFormat, String[] requiredFormat) {
         String[] logSection = line.split("\\s");
         StringBuilder sBuf = new StringBuilder();
-//        sBuf.append("iis_");
+        //        sBuf.append("iis_");
         // 按照要求的格式重新排列字段
-        if(requiredFormat!=null){
+        if (requiredFormat != null) {
             for (String s : requiredFormat) {
                 int j = 0;
                 if (logFormat != null) {

@@ -36,10 +36,10 @@ public class MulLineMergeTransformFactory implements TableTransformFactory {
     @Override
     public OptionRule optionRule() {
         return OptionRule.builder()
-                .required(MulLineMergeTransformConfig.MERGE_FIELD,
+                .required(
+                        MulLineMergeTransformConfig.MERGE_FIELD,
                         MulLineMergeTransformConfig.MERGE_SUFFIX)
-                .optional(
-                        MulLineMergeTransformConfig.MERGE_PREFIX)
+                .optional(MulLineMergeTransformConfig.MERGE_PREFIX)
                 .build();
     }
 

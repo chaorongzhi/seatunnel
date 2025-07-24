@@ -17,15 +17,14 @@
 
 package org.apache.seatunnel.transform.iisparse;
 
-import com.google.auto.service.AutoService;
 import org.apache.seatunnel.api.configuration.util.OptionRule;
 import org.apache.seatunnel.api.table.catalog.CatalogTable;
 import org.apache.seatunnel.api.table.connector.TableTransform;
 import org.apache.seatunnel.api.table.factory.Factory;
 import org.apache.seatunnel.api.table.factory.TableTransformFactory;
 import org.apache.seatunnel.api.table.factory.TableTransformFactoryContext;
-import org.apache.seatunnel.transform.multiplemerge.MulLineMergeTransform;
-import org.apache.seatunnel.transform.multiplemerge.MulLineMergeTransformConfig;
+
+import com.google.auto.service.AutoService;
 
 @AutoService(Factory.class)
 public class IISParseTransformFactory implements TableTransformFactory {
@@ -37,7 +36,8 @@ public class IISParseTransformFactory implements TableTransformFactory {
     @Override
     public OptionRule optionRule() {
         return OptionRule.builder()
-                .required(IISParseTransformConfig.PARSER_FIELD,
+                .required(
+                        IISParseTransformConfig.PARSER_FIELD,
                         IISParseTransformConfig.REQUIRED_FORMAT)
                 .build();
     }

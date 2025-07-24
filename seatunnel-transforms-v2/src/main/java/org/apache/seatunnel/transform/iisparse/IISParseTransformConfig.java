@@ -17,11 +17,12 @@
 
 package org.apache.seatunnel.transform.iisparse;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.seatunnel.api.configuration.Option;
 import org.apache.seatunnel.api.configuration.Options;
 import org.apache.seatunnel.api.configuration.ReadonlyConfig;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.List;
