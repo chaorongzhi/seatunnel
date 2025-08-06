@@ -126,6 +126,12 @@ public class HttpConfig {
                     .defaultValue(DEFAULT_SOCKET_TIMEOUT_MS)
                     .withDescription("Socket timeout setting, default 60s.");
 
+    public static final Option<Boolean> ENABLE_SSL_CERT =
+            Options.key("enable_ssl_cert")
+                    .booleanType()
+                    .defaultValue(false)
+                    .withDescription("Enable ssl certificate.");
+
     public enum ResponseFormat {
         JSON("json"),
         TEXT("text");

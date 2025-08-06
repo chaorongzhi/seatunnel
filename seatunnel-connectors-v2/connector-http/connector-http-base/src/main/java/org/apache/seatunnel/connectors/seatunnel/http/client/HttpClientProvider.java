@@ -18,6 +18,8 @@
 package org.apache.seatunnel.connectors.seatunnel.http.client;
 
 import org.apache.seatunnel.connectors.seatunnel.http.config.HttpParameter;
+import org.apache.seatunnel.connectors.seatunnel.http.exception.HttpConnectorErrorCode;
+import org.apache.seatunnel.connectors.seatunnel.http.exception.HttpConnectorException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -33,6 +35,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -50,8 +53,15 @@ import com.github.rholder.retry.StopStrategies;
 import com.github.rholder.retry.WaitStrategies;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -72,13 +82,47 @@ public class HttpClientProvider implements AutoCloseable {
     private final Retryer<CloseableHttpResponse> retryer;
 
     public HttpClientProvider(HttpParameter httpParameter) {
-        this.httpClient = HttpClients.createDefault();
+        this.httpClient = createHttpClient(httpParameter.isEnableSsl());
         this.retryer = buildRetryer(httpParameter);
         this.requestConfig =
                 RequestConfig.custom()
                         .setConnectTimeout(httpParameter.getConnectTimeoutMs())
                         .setSocketTimeout(httpParameter.getSocketTimeoutMs())
                         .build();
+    }
+
+    private CloseableHttpClient createHttpClient(boolean enableSSL) {
+        if (enableSSL) {
+            return HttpClients.createDefault();
+        }
+
+        TrustManager[] trustAllCertificates =
+                new TrustManager[] {
+                    new X509TrustManager() {
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return null;
+                        }
+
+                        public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+
+                        public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+                    }
+                };
+
+        // 创建一个不验证证书的 SSLContext
+        SSLContext sslContext = null;
+        try {
+            sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, trustAllCertificates, new java.security.SecureRandom());
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            String msg = String.format("create http client failed, msg: %s", e.getMessage());
+            throw new HttpConnectorException(HttpConnectorErrorCode.REQUEST_FAILED, msg);
+        }
+
+        return HttpClients.custom()
+                .setSSLContext(sslContext)
+                .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE) // 禁用主机名验证
+                .build();
     }
 
     private Retryer<CloseableHttpResponse> buildRetryer(HttpParameter httpParameter) {

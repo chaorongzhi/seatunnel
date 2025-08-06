@@ -40,6 +40,7 @@ public class HttpParameter implements Serializable {
     protected boolean enableMultilines;
     protected int connectTimeoutMs = HttpConfig.DEFAULT_CONNECT_TIMEOUT_MS;
     protected int socketTimeoutMs = HttpConfig.DEFAULT_SOCKET_TIMEOUT_MS;
+    protected boolean enableSsl;
 
     public void buildWithConfig(Config pluginConfig) {
         // set url
@@ -92,6 +93,9 @@ public class HttpParameter implements Serializable {
         }
         if (pluginConfig.hasPath(HttpConfig.SOCKET_TIMEOUT_MS.key())) {
             this.setSocketTimeoutMs(pluginConfig.getInt(HttpConfig.SOCKET_TIMEOUT_MS.key()));
+        }
+        if (pluginConfig.hasPath(HttpConfig.ENABLE_SSL_CERT.key())) {
+            this.setEnableSsl(pluginConfig.getBoolean(HttpConfig.ENABLE_SSL_CERT.key()));
         }
     }
 
