@@ -29,7 +29,7 @@ public class SybaseDialectFactory implements JdbcDialectFactory {
     @Override
     public boolean acceptsURL(@NonNull String url) {
         // Support greenplum native driver: com.pivotal.jdbc.GreenplumDriver
-        return url.startsWith("jdbc:jtds:sybase://");
+        return url.startsWith("jdbc:sybase:Tds:");
     }
 
     @Override
