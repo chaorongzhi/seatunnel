@@ -88,6 +88,10 @@
                 <oracle.version>18.3.0.0</oracle.version>
                 <hive.version>3.1.0</hive.version>
                 <clickhouse.version>0.2.6</clickhouse.version>
+                <mssql.version>9.2.1.jre8</mssql.version>
+                <db2.version>db2jcc4</db2.version>
+                <teradata.version>17.20.00.12</teradata.version>
+                <informix.version>4.50.10</informix.version>
 
                 <!-- Imap storage dependency package  -->
                 <hadoop-aliyun.version>3.1.4</hadoop-aliyun.version>
@@ -211,6 +215,18 @@
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
+                <dependency>
+                    <groupId>org.apache.seatunnel</groupId>
+                    <artifactId>connector-http-base</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.seatunnel</groupId>
+                    <artifactId>connector-starrocks</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
 
                 <!-- jdbc driver -->
                 <dependency>
@@ -241,6 +257,30 @@
                     <groupId>ru.yandex.clickhouse</groupId>
                     <artifactId>clickhouse-jdbc</artifactId>
                     <version>${clickhouse.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>com.microsoft.sqlserver</groupId>
+                    <artifactId>mssql-jdbc</artifactId>
+                    <version>${mssql.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>com.ibm.db2.jcc</groupId>
+                    <artifactId>db2jcc</artifactId>
+                    <version>${db2.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>com.teradata.jdbc</groupId>
+                    <artifactId>terajdbc4</artifactId>
+                    <version>${teradata.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>com.ibm.informix</groupId>
+                    <artifactId>jdbc</artifactId>
+                    <version>${informix.version}</version>
                     <scope>provided</scope>
                 </dependency>
 
