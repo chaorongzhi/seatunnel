@@ -36,9 +36,7 @@ public enum MySqlVersion {
                 return V_5_7;
             }
             if (version.startsWith("8.0")
-                    || version.startsWith("10.3")
-                    || version.startsWith("10.4")
-                    || version.startsWith("10.5")) {
+                    || version.startsWith("10.")) {
                 return V_8;
             }
             if (version.startsWith("8.4")) {
