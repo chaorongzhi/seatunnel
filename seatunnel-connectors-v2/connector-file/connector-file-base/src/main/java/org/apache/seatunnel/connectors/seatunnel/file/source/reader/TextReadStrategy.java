@@ -19,7 +19,6 @@ package org.apache.seatunnel.connectors.seatunnel.file.source.reader;
 
 import org.apache.seatunnel.api.common.SeaTunnelAPIErrorCode;
 import org.apache.seatunnel.api.configuration.ReadonlyConfig;
-import org.apache.seatunnel.api.serialization.DeserializationSchema;
 import org.apache.seatunnel.api.source.Collector;
 import org.apache.seatunnel.api.table.catalog.CatalogTableUtil;
 import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
@@ -39,6 +38,10 @@ import org.apache.seatunnel.format.text.splitor.CsvLineSplitor;
 import org.apache.seatunnel.format.text.splitor.DefaultTextLineSplitor;
 import org.apache.seatunnel.format.text.splitor.TextLineSplitor;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+
 import io.airlift.compress.lzo.LzopCodec;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,13 +49,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
 public class TextReadStrategy extends AbstractReadStrategy {
-    private DeserializationSchema<SeaTunnelRow> deserializationSchema;
+    private TextDeserializationSchema deserializationSchema;
     private String fieldDelimiter = BaseSourceConfigOptions.FIELD_DELIMITER.defaultValue();
     private DateUtils.Formatter dateFormat = BaseSourceConfigOptions.DATE_FORMAT.defaultValue();
     private DateTimeUtils.Formatter datetimeFormat =
@@ -86,55 +90,103 @@ public class TextReadStrategy extends AbstractReadStrategy {
 
         try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(inputStream, encoding))) {
-            reader.lines()
-                    .skip(skipHeaderNumber)
-                    .forEach(
-                            line -> {
-                                try {
-                                    SeaTunnelRow seaTunnelRow =
-                                            deserializationSchema.deserialize(
-                                                    line.getBytes(StandardCharsets.UTF_8));
-                                    if (!readColumns.isEmpty()) {
-                                        // need column projection
-                                        Object[] fields;
-                                        if (isMergePartition) {
-                                            fields =
-                                                    new Object
-                                                            [readColumns.size()
-                                                                    + partitionsMap.size()];
-                                        } else {
-                                            fields = new Object[readColumns.size()];
-                                        }
-                                        for (int i = 0; i < indexes.length; i++) {
-                                            fields[i] = seaTunnelRow.getField(indexes[i]);
-                                        }
-                                        seaTunnelRow = new SeaTunnelRow(fields);
-                                    }
-                                    if (isMergePartition) {
-                                        int index = seaTunnelRowType.getTotalFields();
-                                        for (String value : partitionsMap.values()) {
-                                            seaTunnelRow.setField(index++, value);
-                                        }
-                                    }
-
-                                    if (this.dataCarryFilename) {
-                                        seaTunnelRow = dataCarryFilename(seaTunnelRow, path);
-                                    }
-
-                                    seaTunnelRow.setTableId(tableId);
-                                    output.collect(seaTunnelRow);
-                                } catch (IOException e) {
-                                    String errorMsg =
-                                            String.format(
-                                                    "Deserialize this data [%s] failed, please check the origin data",
-                                                    line);
-                                    throw new FileConnectorException(
-                                            FileConnectorErrorCode.DATA_DESERIALIZE_FAILED,
-                                            errorMsg,
-                                            e);
-                                }
-                            });
+            if (textLineSplitor instanceof CsvLineSplitor) {
+                readCsv(reader, path, tableId, partitionsMap, output);
+            } else {
+                reader.lines()
+                        .skip(skipHeaderNumber)
+                        .forEach(
+                                line ->
+                                        deserializeAndCollect(
+                                                line, path, tableId, partitionsMap, output));
+            }
         }
+    }
+
+    private void readCsv(
+            BufferedReader reader,
+            String path,
+            String tableId,
+            Map<String, String> partitionsMap,
+            Collector<SeaTunnelRow> output) {
+        CSVFormat csvFormat = CSVFormat.DEFAULT.withDelimiter(fieldDelimiter.charAt(0));
+        try (CSVParser csvParser = new CSVParser(reader, csvFormat)) {
+            for (CSVRecord csvRecord : csvParser) {
+                if (csvRecord.getRecordNumber() <= skipHeaderNumber) {
+                    continue;
+                }
+                collectRow(
+                        deserializationSchema.deserializeFields(csvRecord.values()),
+                        path,
+                        tableId,
+                        partitionsMap,
+                        output);
+            }
+        } catch (UncheckedIOException e) {
+            throw deserializeException(path, e.getCause());
+        } catch (IOException e) {
+            throw deserializeException(path, e);
+        }
+    }
+
+    private void deserializeAndCollect(
+            String line,
+            String path,
+            String tableId,
+            Map<String, String> partitionsMap,
+            Collector<SeaTunnelRow> output) {
+        try {
+            collectRow(
+                    deserializationSchema.deserialize(line.getBytes(StandardCharsets.UTF_8)),
+                    path,
+                    tableId,
+                    partitionsMap,
+                    output);
+        } catch (IOException e) {
+            throw deserializeException(line, e);
+        }
+    }
+
+    private void collectRow(
+            SeaTunnelRow seaTunnelRow,
+            String path,
+            String tableId,
+            Map<String, String> partitionsMap,
+            Collector<SeaTunnelRow> output) {
+        if (!readColumns.isEmpty()) {
+            // need column projection
+            Object[] fields;
+            if (isMergePartition) {
+                fields = new Object[readColumns.size() + partitionsMap.size()];
+            } else {
+                fields = new Object[readColumns.size()];
+            }
+            for (int i = 0; i < indexes.length; i++) {
+                fields[i] = seaTunnelRow.getField(indexes[i]);
+            }
+            seaTunnelRow = new SeaTunnelRow(fields);
+        }
+        if (isMergePartition) {
+            int index = seaTunnelRowType.getTotalFields();
+            for (String value : partitionsMap.values()) {
+                seaTunnelRow.setField(index++, value);
+            }
+        }
+
+        if (this.dataCarryFilename) {
+            seaTunnelRow = dataCarryFilename(seaTunnelRow, path);
+        }
+
+        seaTunnelRow.setTableId(tableId);
+        output.collect(seaTunnelRow);
+    }
+
+    private FileConnectorException deserializeException(String data, Throwable cause) {
+        String errorMsg =
+                String.format(
+                        "Deserialize this data [%s] failed, please check the origin data", data);
+        return new FileConnectorException(
+                FileConnectorErrorCode.DATA_DESERIALIZE_FAILED, errorMsg, cause);
     }
 
     @Override
