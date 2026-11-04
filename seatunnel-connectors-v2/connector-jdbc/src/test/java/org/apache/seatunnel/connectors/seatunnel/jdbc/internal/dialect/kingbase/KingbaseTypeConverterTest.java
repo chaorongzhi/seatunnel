@@ -26,28 +26,25 @@ import org.apache.seatunnel.api.table.type.DecimalType;
 import org.apache.seatunnel.api.table.type.LocalTimeType;
 import org.apache.seatunnel.api.table.type.MapType;
 import org.apache.seatunnel.api.table.type.PrimitiveByteArrayType;
-import org.apache.seatunnel.common.exception.SeaTunnelRuntimeException;
+import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class KingbaseTypeConverterTest {
     @Test
-    public void testConvertUnsupported() {
+    public void testConvertUnsupportedFallbackToString() {
         BasicTypeDefine<Object> typeDefine =
                 BasicTypeDefine.builder().name("test").columnType("aaa").dataType("aaa").build();
-        try {
-            KingbaseTypeConverter.INSTANCE.convert(typeDefine);
-            Assertions.fail();
-        } catch (SeaTunnelRuntimeException e) {
-            // ignore
-        } catch (Throwable e) {
-            Assertions.fail();
-        }
+        Column column = KingbaseTypeConverter.INSTANCE.convert(typeDefine);
+        Assertions.assertEquals(typeDefine.getName(), column.getName());
+        Assertions.assertEquals(BasicType.STRING_TYPE, column.getDataType());
+        Assertions.assertEquals(
+                typeDefine.getColumnType().toUpperCase(), column.getSourceType().toUpperCase());
     }
 
     @Test
-    public void testReconvertUnsupported() {
+    public void testReconvertUnsupportedFallbackToString() {
         Column column =
                 PhysicalColumn.of(
                         "test",
@@ -56,14 +53,10 @@ public class KingbaseTypeConverterTest {
                         true,
                         null,
                         null);
-        try {
-            KingbaseTypeConverter.INSTANCE.reconvert(column);
-            Assertions.fail();
-        } catch (SeaTunnelRuntimeException e) {
-            // ignore
-        } catch (Throwable e) {
-            Assertions.fail();
-        }
+        BasicTypeDefine<Object> typeDefine = KingbaseTypeConverter.INSTANCE.reconvert(column);
+        Assertions.assertEquals(column.getName(), typeDefine.getName());
+        Assertions.assertEquals(KingbaseTypeConverter.PG_TEXT, typeDefine.getColumnType());
+        Assertions.assertEquals(KingbaseTypeConverter.PG_TEXT, typeDefine.getDataType());
     }
 
     @Test
@@ -861,5 +854,76 @@ public class KingbaseTypeConverterTest {
         Assertions.assertEquals(
                 KingbaseTypeConverter.PG_SMALLINT_ARRAY, typeDefine.getColumnType());
         Assertions.assertEquals(KingbaseTypeConverter.PG_SMALLINT_ARRAY, typeDefine.getDataType());
+    }
+
+    @Test
+    public void testConvertStandardTypeAliases() {
+        assertDataType("SMALLINT", BasicType.SHORT_TYPE);
+        assertDataType("INT", BasicType.INT_TYPE);
+        assertDataType("INTEGER", BasicType.INT_TYPE);
+        assertDataType("BIGINT", BasicType.LONG_TYPE);
+        assertDataType("REAL", BasicType.FLOAT_TYPE);
+        assertDataType("BOOLEAN", BasicType.BOOLEAN_TYPE);
+    }
+
+    @Test
+    public void testConvertDecimalAlias() {
+        BasicTypeDefine<Object> typeDefine =
+                BasicTypeDefine.builder()
+                        .name("test")
+                        .columnType("DECIMAL(10,2)")
+                        .dataType("DECIMAL")
+                        .precision(10L)
+                        .scale(2)
+                        .build();
+        Column column = KingbaseTypeConverter.INSTANCE.convert(typeDefine);
+        Assertions.assertEquals(new DecimalType(10, 2), column.getDataType());
+
+        typeDefine =
+                BasicTypeDefine.builder()
+                        .name("test")
+                        .columnType("DECIMAL")
+                        .dataType("DECIMAL")
+                        .build();
+        column = KingbaseTypeConverter.INSTANCE.convert(typeDefine);
+        Assertions.assertEquals(
+                new DecimalType(
+                        KingbaseTypeConverter.DEFAULT_PRECISION,
+                        KingbaseTypeConverter.DEFAULT_SCALE),
+                column.getDataType());
+    }
+
+    @Test
+    public void testConvertDatetime() {
+        BasicTypeDefine<Object> typeDefine =
+                BasicTypeDefine.builder()
+                        .name("test")
+                        .columnType("sys.\"datetime\"")
+                        .dataType("\"sys\".\"datetime\"")
+                        .build();
+        Column column = KingbaseTypeConverter.INSTANCE.convert(typeDefine);
+        Assertions.assertEquals(LocalTimeType.LOCAL_DATE_TIME_TYPE, column.getDataType());
+
+        typeDefine =
+                BasicTypeDefine.builder()
+                        .name("test")
+                        .columnType("datetime")
+                        .dataType("datetime")
+                        .scale(3)
+                        .build();
+        column = KingbaseTypeConverter.INSTANCE.convert(typeDefine);
+        Assertions.assertEquals(LocalTimeType.LOCAL_DATE_TIME_TYPE, column.getDataType());
+        Assertions.assertEquals(3, column.getScale());
+    }
+
+    private static void assertDataType(String nativeType, SeaTunnelDataType<?> expected) {
+        BasicTypeDefine<Object> typeDefine =
+                BasicTypeDefine.builder()
+                        .name("test")
+                        .columnType(nativeType)
+                        .dataType(nativeType)
+                        .build();
+        Column column = KingbaseTypeConverter.INSTANCE.convert(typeDefine);
+        Assertions.assertEquals(expected, column.getDataType(), nativeType);
     }
 }
